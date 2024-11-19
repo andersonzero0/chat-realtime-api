@@ -1,0 +1,87 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "mongodb"
+  url      = env("DATABASE_URL")
+}
+
+model Project {
+  id         String   @id @default(auto()) @map("_id") @db.ObjectId
+  name       String   @unique
+  email      String
+  created_at DateTime @default(now())
+  updated_at  DateTime @updatedAt
+
+  project_messages ProjectMesssages[]
+  chat_list        ChatList[]
+  Chat_listItem    ChatListItem[]
+
+  @@map("projects")
+}
+
+model ProjectMesssages {
+  id         String    @id @default(auto()) @map("_id") @db.ObjectId
+  project_id String    @db.ObjectId
+  project    Project   @relation(fields: [project_id], references: [id])
+  messages   Message[]
+
+  @@map("project_messages")
+}
+
+model Message {
+  id          String   @id @default(auto()) @map("_id") @db.ObjectId
+  sender_id   String
+  receiver_id String
+  message     Json
+  ref_message Json?
+  read        Boolean  @default(false)
+  created_at  DateTime @default(now())
+  updated_at  DateTime @updatedAt
+
+  project_messages_id String           @db.ObjectId
+  project_messages    ProjectMesssages @relation(fields: [project_messages_id], references: [id])
+
+  chat_list_item_id String       @db.ObjectId
+  chat_list_item    ChatListItem @relation(fields: [chat_list_item_id], references: [id])
+
+  @@map("messages")
+}
+
+model ChatListItem {
+  id                            String                   @id @default(auto()) @map("_id") @db.ObjectId
+  project_id                    String                   @db.ObjectId
+  project                       Project                  @relation(fields: [project_id], references: [id])
+  valid_chatlist_id             String                   @unique
+  user_one_id                   String
+  user_two_id                   String
+  messages                      Message[]
+  chat_list_on_chat_list_item   ChatListOnChatListItem[]
+
+  @@map("chat_list_items")
+}
+
+model ChatListOnChatListItem {
+  id                String       @id @default(auto()) @map("_id") @db.ObjectId
+  chat_list_id      String       @db.ObjectId
+  chat_list_item_id String       @db.ObjectId
+  chat_list         ChatList     @relation(fields: [chat_list_id], references: [id])
+  chat_list_item    ChatListItem @relation(fields: [chat_list_item_id], references: [id])
+
+  @@map("chat_list_on_chat_list_items")
+}
+
+model ChatList {
+  id         String  @id @default(auto()) @map("_id") @db.ObjectId
+  project_id String  @db.ObjectId
+  project    Project @relation(fields: [project_id], references: [id])
+  user_id    String  @unique
+
+  chat_list ChatListOnChatListItem[]
+
+  @@map("chat_lists")
+}
