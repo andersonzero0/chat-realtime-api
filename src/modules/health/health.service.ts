@@ -1,4 +1,3 @@
-import { S3 } from '@aws-sdk/client-s3';
 import { Injectable } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import {
@@ -34,18 +33,18 @@ export class HealthService {
         throw new Error('Database configuration not found');
       }
 
-      const { accessKeyId, secretAccessKey, region, bucket } = configS3;
+      //const { accessKeyId, secretAccessKey, region, bucket } = configS3;
 
       const kafkaClient = new Kafka({
         brokers: [configDatabase.kafka.broker],
       });
-      const s3 = new S3({
-        credentials: {
-          accessKeyId,
-          secretAccessKey,
-        },
-        region,
-      });
+      // const s3 = new S3({
+      //   credentials: {
+      //     accessKeyId,
+      //     secretAccessKey,
+      //   },
+      //   region,
+      // });
 
       const redisClient = createClient({
         url: configDatabase.redis.url,
@@ -55,7 +54,7 @@ export class HealthService {
       await redisClient.connect();
       await redisClient.disconnect();
 
-      await s3.headBucket({ Bucket: bucket });
+      //await s3.headBucket({ Bucket: bucket });
 
       const admin = kafkaClient.admin();
       await admin.connect();
@@ -69,6 +68,7 @@ export class HealthService {
           }),
       ]);
     } catch (error) {
+      console.error(error);
       throw new Error(`Service health check failed: ${error.message}`);
     }
   }

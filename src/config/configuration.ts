@@ -23,7 +23,6 @@ interface EmailConfig {
 }
 
 export interface AuthConfig {
-  secretKeyProject: string;
   jwtSecretUser: string;
 }
 
@@ -60,7 +59,6 @@ export default (): Configuration => ({
     resendApiKey: process.env.EMAIL_RESEND_API_KEY || 'default_resend_api_key',
   },
   auth: {
-    secretKeyProject: process.env.SECRET_KEY_PROJECT || 'default',
     jwtSecretUser: process.env.JWT_SECRET_USER || 'default',
   },
 });

@@ -25,10 +25,6 @@ class EnvironmentVariables {
 
   @IsString()
   @IsNotEmpty()
-  SECRET_KEY_PROJECT!: string;
-
-  @IsString()
-  @IsNotEmpty()
   JWT_SECRET_USER!: string;
 
   @IsString()
@@ -46,6 +42,10 @@ class EnvironmentVariables {
   @IsString()
   @IsNotEmpty()
   AWS_S3_REGION!: string;
+
+  @IsString()
+  @IsNotEmpty()
+  KAFKA_BROKER!: string;
 }
 
 export function validate(config: Record<string, unknown>) {
@@ -66,7 +66,7 @@ export function validate(config: Record<string, unknown>) {
     });
 
     Logger.error(message);
-    throw new Error(errors.toString());
+    throw new Error();
   }
   return validatedConfig;
 }

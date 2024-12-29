@@ -1,17 +1,11 @@
-FROM node:20.11.1
+FROM node:22.12.0-slim
 
-WORKDIR /usr/src/app
+RUN apt update && \
+    apt install openssl procps -y && \
+    npm install -g @nestjs/cli@10.4.2
 
-COPY package*.json ./
+USER node
 
-RUN npm install
+WORKDIR /home/node/app
 
-COPY . .
-
-RUN npm run build
-
-RUN npx prisma generate
-
-EXPOSE 3000
-
-CMD npm run start:prod
+CMD [ "tail", "-f", "/dev/null" ]

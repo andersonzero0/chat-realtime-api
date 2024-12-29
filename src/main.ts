@@ -5,7 +5,7 @@ import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
 import { apiReference } from '@scalar/nestjs-api-reference';
 import { Logger, ValidationPipe } from '@nestjs/common';
 import { RedisIoAdapter } from './services/redis/redis.adapter';
-import { HealthService } from './domain/health/health.service';
+import { HealthService } from './modules/health/health.service';
 
 async function bootstrap() {
   const logger = new Logger('bootstrap');

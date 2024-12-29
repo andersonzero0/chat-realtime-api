@@ -3,14 +3,14 @@ import { ConfigModule } from '@nestjs/config';
 import configuration from './config/configuration';
 import { validate } from './config/env.validation';
 import { PrismaModule } from './services/prisma/prisma.module';
-import { ProjectsModule } from './domain/projects/projects.module';
-import { AuthModule } from './domain/auth/auth.module';
+import { ProjectsModule } from './modules/projects/projects.module';
+import { AuthModule } from './modules/auth/auth.module';
 import { MailModule } from './services/mail/mail.module';
-import { MessagesModule } from './domain/messages/messages.module';
-import { ChatModule } from './domain/chat/chat.module';
+import { MessagesModule } from './modules/messages/messages.module';
+import { ChatModule } from './modules/chat/chat.module';
 import { S3Module } from './services/s3/s3.module';
 import { RedisModule } from './services/redis/redis.module';
-import { HealthModule } from './domain/health/health.module';
+import { HealthModule } from './modules/health/health.module';
 import { KafkaModule } from './services/kafka/kafka.module';
 import {
   makeCounterProvider,
@@ -26,6 +26,7 @@ import { MetricsMiddleware } from './middlewares/metrics.middleware';
       load: [configuration],
       validate,
       isGlobal: true,
+      expandVariables: true,
     }),
     PrismaModule,
     ProjectsModule,
