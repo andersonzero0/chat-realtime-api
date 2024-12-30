@@ -23,7 +23,7 @@ export class S3Service {
       throw new Error('AWS credentials not found');
     }
 
-    const { accessKeyId, secretAccessKey, region } = this.configS3;
+    const { accessKeyId, secretAccessKey, region, endpoint } = this.configS3;
 
     return new S3({
       credentials: {
@@ -31,6 +31,8 @@ export class S3Service {
         secretAccessKey,
       },
       region,
+      endpoint,
+      forcePathStyle: true,
     });
   }
 
@@ -42,10 +44,10 @@ export class S3Service {
 
       const s3 = this.getS3Bucket();
 
-      const { bucket, region } = this.configS3;
+      const { bucket, cdn_url } = this.configS3;
 
       let key = `${crypto.randomBytes(16).toString('hex')}_${file.originalname}`;
-      key = key.replace(/ /g, '%20');
+      key = key.trim();
 
       const params: PutObjectCommandInput = {
         Bucket: bucket,
@@ -57,7 +59,7 @@ export class S3Service {
       const command = new PutObjectCommand(params);
       await s3.send(command);
 
-      const url = `https://${bucket}.s3.${region}.amazonaws.com/${key}`;
+      const url = `${cdn_url}/${key}`;
 
       return url;
     } catch (error) {

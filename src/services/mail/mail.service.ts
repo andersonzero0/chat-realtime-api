@@ -27,7 +27,6 @@ export class MailService {
       });
 
       if (responseSendMail.error !== null) {
-        console.log(responseSendMail.error);
         throw new BadRequestException('Error sending email!');
       }
 

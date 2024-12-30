@@ -1,5 +1,5 @@
 import { ApiProperty, OmitType } from '@nestjs/swagger';
-import { Type } from 'class-transformer';
+import { Transform, Type } from 'class-transformer';
 import {
   IsBooleanString,
   IsEnum,
@@ -63,7 +63,14 @@ export class MessageDto {
 
   @ApiProperty()
   @ValidateNested()
+  @IsNotEmpty()
   @Type(() => MessageContent)
+  @Transform(({ value }) => {
+    if (typeof value === 'string') {
+      return JSON.parse(value);
+    }
+    return value;
+  })
   message: MessageContent;
 
   @ApiProperty({ required: false })

@@ -45,6 +45,7 @@ export interface AwsConfig {
     region: string;
     bucket: string;
     endpoint: string;
+    cdn_url: string;
   };
 }
 
@@ -114,6 +115,7 @@ export default (): Configuration => ({
       region: process.env.AWS_S3_REGION || 'us-east-1',
       bucket: process.env.AWS_S3_BUCKET || 'chat-api',
       endpoint: process.env.AWS_S3_ENDPOINT || 'http://minio:9000',
+      cdn_url: process.env.AWS_S3_CDN_URL || 'http://localhost:9000',
     },
   },
   email: {

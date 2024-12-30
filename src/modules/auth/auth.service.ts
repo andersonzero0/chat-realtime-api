@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, UnauthorizedException } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { JwtService } from '@nestjs/jwt';
 import { AuthConfig } from '../../config/configuration';
@@ -29,6 +29,12 @@ export class AuthService {
       }
 
       const payload = this.decryptPayload(token);
+
+      const project = await this.projectService.getProjectById(payload);
+
+      if (!project) {
+        throw new UnauthorizedException();
+      }
 
       return payload;
     } catch (error) {

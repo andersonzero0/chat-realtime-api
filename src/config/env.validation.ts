@@ -154,6 +154,10 @@ class EnvironmentVariables {
   @IsString()
   @IsNotEmpty()
   AWS_S3_ENDPOINT!: string;
+
+  @IsString()
+  @IsNotEmpty()
+  AWS_S3_CDN_URL!: string;
 }
 
 export function validate(config: Record<string, unknown>) {
