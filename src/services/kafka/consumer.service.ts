@@ -2,7 +2,7 @@ import { Injectable, OnApplicationShutdown } from '@nestjs/common';
 import { IConsumer } from './interfaces/consumer.interface';
 import { KafkaConsumer } from './kafka.consumer';
 import { ConsumerConfig, ConsumerSubscribeTopics, KafkaMessage } from 'kafkajs';
-import { DatabaseConfig } from '../../config/configuration';
+import { KafkaConfig } from '../../config/configuration';
 import { ConfigService } from '@nestjs/config';
 
 type KafkaMessageType<T = any> = Omit<KafkaMessage, 'value'> & {
@@ -21,8 +21,7 @@ export class ConsumerService implements OnApplicationShutdown {
 
   constructor(private readonly configService: ConfigService) {}
 
-  private readonly configKafka =
-    this.configService.get<DatabaseConfig>('database')?.kafka;
+  private readonly configKafka = this.configService.get<KafkaConfig>('kafka');
 
   async consume<T = any>({
     topic,

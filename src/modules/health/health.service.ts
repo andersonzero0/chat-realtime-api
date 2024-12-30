@@ -8,8 +8,14 @@ import {
 } from '@nestjs/terminus';
 import { Kafka } from 'kafkajs';
 import { createClient } from 'redis';
-import { AwsConfig, DatabaseConfig } from '../../config/configuration';
+import {
+  AwsConfig,
+  RedisConfig,
+  KafkaConfig,
+  MongodbConfig,
+} from '../../config/configuration';
 import { PrismaService } from '../../services/prisma/prisma.service';
+import { S3 } from '@aws-sdk/client-s3';
 
 @Injectable()
 export class HealthService {
@@ -26,35 +32,40 @@ export class HealthService {
   })
   async check() {
     try {
-      const configDatabase = this.configService.get<DatabaseConfig>('database');
+      const configMongo = this.configService.get<MongodbConfig>('mongodb');
+      const configRedis = this.configService.get<RedisConfig>('redis');
+      const configKafka = this.configService.get<KafkaConfig>('kafka');
       const configS3 = this.configService.get<AwsConfig>('aws')?.s3;
 
-      if (!configDatabase || !configS3) {
+      if (!configKafka || !configS3 || !configMongo || !configRedis) {
         throw new Error('Database configuration not found');
       }
 
-      //const { accessKeyId, secretAccessKey, region, bucket } = configS3;
+      const { accessKeyId, secretAccessKey, region, bucket } = configS3;
 
       const kafkaClient = new Kafka({
-        brokers: [configDatabase.kafka.broker],
+        brokers: [configKafka.broker],
       });
-      // const s3 = new S3({
-      //   credentials: {
-      //     accessKeyId,
-      //     secretAccessKey,
-      //   },
-      //   region,
-      // });
+
+      const s3 = new S3({
+        credentials: {
+          accessKeyId,
+          secretAccessKey,
+        },
+        region,
+        endpoint: configS3.endpoint,
+        forcePathStyle: true,
+      });
 
       const redisClient = createClient({
-        url: configDatabase.redis.url,
-        password: configDatabase.redis.password,
+        url: configRedis.url,
+        password: configRedis.password,
       });
 
       await redisClient.connect();
       await redisClient.disconnect();
 
-      //await s3.headBucket({ Bucket: bucket });
+      await s3.headBucket({ Bucket: bucket });
 
       const admin = kafkaClient.admin();
       await admin.connect();
@@ -63,12 +74,11 @@ export class HealthService {
       return this.healthService.check([
         async () => this.httpIndicator.pingCheck('http', 'https://google.com'),
         async () =>
-          this.prismaIndicator.pingCheck('database', this.prismaClient, {
+          this.prismaIndicator.pingCheck('MongoDB', this.prismaClient, {
             timeout: 2000,
           }),
       ]);
     } catch (error) {
-      console.error(error);
       throw new Error(`Service health check failed: ${error.message}`);
     }
   }

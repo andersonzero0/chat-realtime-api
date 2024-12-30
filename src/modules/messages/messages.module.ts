@@ -5,7 +5,7 @@ import { BullModule } from '@nestjs/bullmq';
 import { MulterModule } from '@nestjs/platform-express';
 import * as multer from 'multer';
 import { ConfigService } from '@nestjs/config';
-import { DatabaseConfig } from '../../config/configuration';
+import { RedisConfig } from '../../config/configuration';
 import { MessagesConsumer } from './messages.consumer';
 import { PrismaModule } from '../../services/prisma/prisma.module';
 import { AuthModule } from '../auth/auth.module';
@@ -26,8 +26,7 @@ import { ProjectsService } from '../projects/projects.service';
     BullModule.forRootAsync({
       inject: [ConfigService],
       useFactory: async (configService: ConfigService) => {
-        const configRedis =
-          configService.get<DatabaseConfig>('database')?.redis;
+        const configRedis = configService.get<RedisConfig>('redis');
 
         if (!configRedis) {
           throw new Error('Redis credentials not found');

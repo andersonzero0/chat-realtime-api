@@ -1,24 +1,39 @@
 services:
   app:
-      build: .
-      volumes:
-        - .:/home/node/app
-      ports:
-        - 3000:3000
-      networks:
-        - backend
+    build: .
+    volumes:
+      - .:/home/node/app
+    ports:
+      - 3000:3000
+    networks:
+      - backend
 
   mongodb:
-    image: prismagraphql/mongo-single-replica:4.4.3-bionic
+    build: ./.docker/mongodb
     container_name: mongodb
     environment:
-      TZ: ${CONTAINER_TIMEZONE:-UTC}
+      # TZ: ${CONTAINER_TIMEZONE:-UTC}
       MONGO_INITDB_ROOT_USERNAME: ${MONGODB_USER:-chat-api}
       MONGO_INITDB_ROOT_PASSWORD: ${MONGODB_PASSWORD:-chat-api}
     ports:
       - '${MONGODB_PORT:-27017}:27017'
     networks:
-        - backend
+      - backend
+
+  minio:
+    container_name: ${CONTAINER_NAME}-minio
+    image: minio/minio:latest
+    ports:
+      - '${FORWARD_MINIO_PORT:-9000}:9000'
+      - '${FORWARD_MINIO_CONSOLE_PORT:-8900}:8900'
+    environment:
+      MINIO_ROOT_USER: ${MINIO_ROOT_USER:-chat-api}
+      MINIO_ROOT_PASSWORD: ${MINIO_ROOT_PASSWORD:-chat-api-pass}
+    volumes:
+      - minio_storage:/data/minio
+    networks:
+      - backend
+    command: 'minio server /data/minio --console-address ":8900"'
 
   redis_container:
     image: redis:${REDIS_VERSION}
@@ -26,7 +41,7 @@ services:
     ports:
       - '${REDIS_PORT:-6379}:6379'
     networks:
-        - backend
+      - backend
     volumes:
       - ./config/redis.conf:/usr/local/etc/redis/redis.conf
     command: ['redis-server', '/usr/local/etc/redis/redis.conf']
@@ -46,7 +61,7 @@ services:
       - KAFKA_CFG_INTER_BROKER_LISTENER_NAME=CLIENT
       - KAFKA_CFG_NUM_PARTITIONS=${KAFKA_NUM_PARTITIONS:-100}
     networks:
-        - backend
+      - backend
     depends_on:
       - zookeeper
 
@@ -57,7 +72,7 @@ services:
     environment:
       - ALLOW_ANONYMOUS_LOGIN=yes
     networks:
-        - backend
+      - backend
 
   kafka-ui:
     image: provectuslabs/kafka-ui
@@ -69,13 +84,17 @@ services:
       - '${KAFKA_PORT:-8080}:8080'
     restart: always
     networks:
-        - backend
+      - backend
     environment:
       - KAFKA_CLUSTERS_0_NAME=${CONTAINER_NAME}
       - KAFKA_CLUSTERS_0_BOOTSTRAPSERVERS=kafka:${KAFKA_CLIENT_PORT}
       - KAFKA_CLUSTERS_0_ZOOKEEPER=zookeeper:${ZOOKEEPER_PORT}
-    
+
 networks:
   backend:
     name: ${CONTAINER_NAME}-net
     driver: bridge
+
+volumes:
+  minio_storage:
+    driver: local

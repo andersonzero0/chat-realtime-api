@@ -2,7 +2,7 @@ import { Injectable, OnModuleInit, Logger } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { RedisClientType } from '@redis/client';
 import { createClient } from 'redis';
-import { DatabaseConfig } from '../../config/configuration';
+import { RedisConfig } from '../../config/configuration';
 
 @Injectable()
 export class RedisService implements OnModuleInit {
@@ -10,8 +10,7 @@ export class RedisService implements OnModuleInit {
 
   private client: RedisClientType;
   private readonly logger = new Logger(RedisService.name);
-  private redisConfig =
-    this.configService.get<DatabaseConfig>('database')?.redis;
+  private redisConfig = this.configService.get<RedisConfig>('redis');
 
   async onModuleInit() {
     if (!this.redisConfig) {

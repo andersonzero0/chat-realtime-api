@@ -4,7 +4,7 @@ import { createAdapter } from '@socket.io/redis-adapter';
 import { createClient } from 'redis';
 import { INestApplication } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
-import { DatabaseConfig } from '../../config/configuration';
+import { RedisConfig } from '../../config/configuration';
 
 export class RedisIoAdapter extends IoAdapter {
   constructor(
@@ -15,8 +15,7 @@ export class RedisIoAdapter extends IoAdapter {
   }
 
   private adapterConstructor: ReturnType<typeof createAdapter>;
-  private configRedos =
-    this.configService.get<DatabaseConfig>('database')?.redis;
+  private configRedos = this.configService.get<RedisConfig>('redis');
 
   async connectToRedis(): Promise<void> {
     if (!this.configRedos) {

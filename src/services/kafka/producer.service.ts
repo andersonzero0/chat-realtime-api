@@ -3,7 +3,7 @@ import { IProducer } from './interfaces/producer.interface';
 import { ConfigService } from '@nestjs/config';
 import { Message } from 'kafkajs';
 import { KafkaProducer } from './kafka.producer';
-import { DatabaseConfig } from '../../config/configuration';
+import { KafkaConfig } from '../../config/configuration';
 
 type KafkaMessageType<T = any> = Omit<Message, 'value'> & {
   value: T | Buffer | string | null;
@@ -20,8 +20,7 @@ export class ProducerService implements OnApplicationShutdown {
 
   constructor(private readonly configService: ConfigService) {}
 
-  private readonly configKafka =
-    this.configService.get<DatabaseConfig>('database')?.kafka;
+  private readonly configKafka = this.configService.get<KafkaConfig>('kafka');
 
   async produce<T = any>({ topic, message }: KafkaProducerOptions<T>) {
     if (message && message.value) {
