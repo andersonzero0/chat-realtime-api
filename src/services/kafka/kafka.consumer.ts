@@ -22,6 +22,7 @@ export class KafkaConsumer implements IConsumer {
     broker: string,
   ) {
     this.kafka = new Kafka({
+      clientId: 'chat-api-consumer',
       brokers: [broker],
       logCreator: (logLevel: LogLevelKafka) =>
         logCreatorKafka(logLevel, this.logger),
@@ -33,6 +34,7 @@ export class KafkaConsumer implements IConsumer {
   async consume(onMessage: (message: KafkaMessage) => Promise<void>) {
     await this.consumer.subscribe(this.topic);
     await this.consumer.run({
+      partitionsConsumedConcurrently: 100, // TODO: ENV
       eachMessage: async ({ message }) => {
         try {
           return onMessage(message);

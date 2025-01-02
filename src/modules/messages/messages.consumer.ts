@@ -12,7 +12,7 @@ export class MessagesConsumer implements OnModuleInit {
 
   async onModuleInit() {
     await this.consumerService.consume<MessageConsumerType>({
-      topic: { topics: ['messages'] },
+      topic: { topics: ['messages'], fromBeginning: true },
       config: {
         groupId: 'messages-consumer',
         retry: {

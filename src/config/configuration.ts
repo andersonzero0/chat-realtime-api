@@ -22,6 +22,7 @@ export interface MongodbConfig {
 
 export interface RedisConfig {
   version: string;
+  host: string;
   port: number;
   url: string;
   password: string;
@@ -92,6 +93,7 @@ export default (): Configuration => ({
   },
   redis: {
     version: process.env.REDIS_VERSION || 'latest',
+    host: process.env.REDIS_HOST || 'localhost',
     port: parseInt(process.env.REDIS_PORT || '6379', 10),
     url: process.env.REDIS_URL || 'redis://redis:6379',
     password: process.env.REDIS_PASSWORD || 'supersecret',

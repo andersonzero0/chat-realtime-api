@@ -1,6 +1,5 @@
 import { MiddlewareConsumer, Module } from '@nestjs/common';
 import { ConfigModule } from '@nestjs/config';
-import configuration from './config/configuration';
 import { validate } from './config/env.validation';
 import { PrismaModule } from './services/prisma/prisma.module';
 import { ProjectsModule } from './modules/projects/projects.module';
@@ -18,11 +17,13 @@ import {
   PrometheusModule,
 } from '@willsoto/nestjs-prometheus';
 import { MetricsMiddleware } from './middlewares/metrics.middleware';
+import { CacheManagerModule } from './services/cache-manager/cache-manager.module';
+import configuration from './config/configuration';
 
 @Module({
   imports: [
     ConfigModule.forRoot({
-      envFilePath: `.env.${process.env.NODE_ENV || 'development'}`,
+      envFilePath: `.env`,
       load: [configuration],
       validate,
       isGlobal: true,
@@ -41,6 +42,7 @@ import { MetricsMiddleware } from './middlewares/metrics.middleware';
     PrometheusModule.register({
       path: '/metrics',
     }),
+    CacheManagerModule,
   ],
   providers: [
     makeCounterProvider({

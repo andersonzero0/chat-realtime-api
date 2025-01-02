@@ -75,36 +75,27 @@ export class MessagesController {
       const created_at = new Date(now.getTime() - timezoneOffset);
       const id = crypto.randomBytes(12).toString('hex');
 
+      const newMessage = {
+        ...message,
+        id: id.toString(),
+        sender_id: req.user_id,
+        created_at,
+        updated_at: created_at,
+      };
+
       await this.messagesService.callJobRegisterMessages({
-        message: {
-          ...message,
-          id: id.toString(),
-          sender_id: req.user_id,
-          created_at,
-          updated_at: created_at,
-        },
+        message: newMessage,
         project_id: req.project_id,
       });
 
       await this.chatService.sendMessage({
-        message: {
-          ...message,
-          id: id.toString(),
-          sender_id: req.user_id,
-          created_at,
-          updated_at: created_at,
-        },
+        message: newMessage,
         project_id: req.project_id,
       });
 
       return {
-        ...message,
-        id: id.toString(),
-        ref_message: message.ref_message || null,
-        sender_id: req.user_id,
+        ...newMessage,
         read: false,
-        created_at,
-        updated_at: created_at,
       };
     } catch (error) {
       throw error;

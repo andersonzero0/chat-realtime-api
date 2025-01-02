@@ -6,15 +6,15 @@ let last_user = 0;
 
 function createClient(id_user) {
   try {
-    const socket = io('http://192.168.1.105:3000/chat', {
+    const socket = io('http://localhost:3000/chat', {
       transports: ['websocket'],
       withCredentials: true,
       auth: {
         id: id_user,
         token:
           id_user == '01'
-            ? 'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjY2YjRkOTcxOGQ1ZWNjNTZiMDM2MDFiMl8wMSIsImlhdCI6MTcyNTQ2NDYwMiwiZXhwIjoxNzI2NzYwNjAyfQ.ziHHd5AViJBJsQhu_Ro0oXwzX6rH-aonJj3Iq0cuLco'
-            : 'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjY2YjRkOTcxOGQ1ZWNjNTZiMDM2MDFiMl8wMiIsImlhdCI6MTcyNTQ2NDQ3NCwiZXhwIjoxNzI2NzYwNDc0fQ.Kg1wMl1c9SdfF5QtsBaCsk9is4xBluI3QYzVidJ8ZYY',
+            ? 'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjY3NzMwZTBlOTljZWJlMjMxODc2ZjM3N18wMSIsImlhdCI6MTczNTgyNjUzMywiZXhwIjoxNzM3MTIyNTMzfQ.80QfZ94xy8Iw_5amXpLozFq1uf6anhMJL9YsJ2f796U'
+            : 'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjY3NzMwZTBlOTljZWJlMjMxODc2ZjM3N18wMiIsImlhdCI6MTczNTgyNjU1NiwiZXhwIjoxNzM3MTIyNTU2fQ.ZzIlj6Hw7C5vgR4AgCn694W3NYfF_64RM0uIWsL8lPo',
       },
     });
 
@@ -37,14 +37,10 @@ function createClient(id_user) {
     socket.on('disconnect', () => {
       console.log('Last user:', last_user);
       throw new Error('Disconnected from the WebSocket server: ', id_user);
-      console.log('Disconnected from the WebSocket server');
     });
-
-    // Evento de erro
     socket.on('connect_error', () => {
       console.log('Last user:', last_user);
       throw new Error('WebSocket connection error: ', id_user);
-      console.error('WebSocket error');
     });
   } catch (error) {
     console.log('Last user:', last_user);

@@ -59,6 +59,10 @@ class EnvironmentVariables {
   @IsNotEmpty()
   REDIS_VERSION!: string;
 
+  @IsString()
+  @IsNotEmpty()
+  REDIS_HOST!: string;
+
   @IsNumber()
   @IsNotEmpty()
   REDIS_PORT!: number;
