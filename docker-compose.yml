@@ -3,6 +3,8 @@ services:
     build: .
     volumes:
       - .:/home/node/app
+    environment:
+      - TZ=${CONTAINER_TIMEZONE:-UTC}
     ports:
       - 3000:3000
     networks:
@@ -12,11 +14,25 @@ services:
     build: ./.docker/mongodb
     container_name: mongodb
     environment:
-      # TZ: ${CONTAINER_TIMEZONE:-UTC}
+      TZ: ${CONTAINER_TIMEZONE:-UTC}
       MONGO_INITDB_ROOT_USERNAME: ${MONGODB_USER:-chat-api}
       MONGO_INITDB_ROOT_PASSWORD: ${MONGODB_PASSWORD:-chat-api}
     ports:
       - '${MONGODB_PORT:-27017}:27017'
+    networks:
+      - backend
+
+  mongo-express:
+    image: mongo-express
+    restart: always
+    ports:
+      - 8081:8081
+    environment:
+      TZ: ${CONTAINER_TIMEZONE:-UTC}
+      ME_CONFIG_MONGODB_ADMINUSERNAME: root
+      ME_CONFIG_MONGODB_ADMINPASSWORD: root
+      ME_CONFIG_MONGODB_URL: mongodb://root:root@mongodb:27017?authSource=admin&directConnection=true
+      ME_CONFIG_BASICAUTH: false
     networks:
       - backend
 
@@ -27,6 +43,7 @@ services:
       - '${FORWARD_MINIO_PORT:-9000}:9000'
       - '${FORWARD_MINIO_CONSOLE_PORT:-8900}:8900'
     environment:
+      TZ: ${CONTAINER_TIMEZONE:-UTC}
       MINIO_ROOT_USER: ${MINIO_ROOT_USER:-chat-api}
       MINIO_ROOT_PASSWORD: ${MINIO_ROOT_PASSWORD:-chat-api-pass}
     volumes:
@@ -38,6 +55,8 @@ services:
   redis_container:
     image: redis:${REDIS_VERSION}
     container_name: redis
+    environment:
+      TZ: ${CONTAINER_TIMEZONE:-UTC}
     ports:
       - '${REDIS_PORT:-6379}:6379'
     networks:
@@ -52,6 +71,7 @@ services:
     ports:
       - '${KAFKA_EXTERNAL_PORT:-9093}:9093'
     environment:
+      - TZ=${CONTAINER_TIMEZONE:-UTC}
       - KAFKA_BROKER_ID=${KAFKA_BROKER_ID:-1}
       - KAFKA_CFG_ZOOKEEPER_CONNECT=zookeeper:${ZOOKEEPER_PORT:-2181}
       - ALLOW_PLAINTEXT_LISTENER=yes
@@ -70,6 +90,7 @@ services:
     ports:
       - ${ZOOKEEPER_PORT:-2181}:2181
     environment:
+      - TZ=${CONTAINER_TIMEZONE:-UTC}
       - ALLOW_ANONYMOUS_LOGIN=yes
     networks:
       - backend
@@ -86,6 +107,7 @@ services:
     networks:
       - backend
     environment:
+      - TZ=${CONTAINER_TIMEZONE:-UTC}
       - KAFKA_CLUSTERS_0_NAME=${CONTAINER_NAME}
       - KAFKA_CLUSTERS_0_BOOTSTRAPSERVERS=kafka:${KAFKA_CLIENT_PORT}
       - KAFKA_CLUSTERS_0_ZOOKEEPER=zookeeper:${ZOOKEEPER_PORT}

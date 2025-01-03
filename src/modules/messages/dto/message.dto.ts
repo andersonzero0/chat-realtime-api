@@ -51,7 +51,7 @@ class RefMessage {
 
 export class MessageDto {
   @ApiProperty({ readOnly: true })
-  id?: string;
+  id: string;
 
   @ValidateIf(() => false)
   sender_id: string;
@@ -88,10 +88,10 @@ export class MessageDto {
   read?: boolean;
 
   @ApiProperty({ readOnly: true, required: false })
-  created_at?: Date;
+  created_at?: Date | string;
 
   @ApiProperty({ readOnly: true, required: false })
-  updated_at?: Date;
+  updated_at?: Date | string;
 }
 
 export class CreateMessageDto extends OmitType(MessageDto, [

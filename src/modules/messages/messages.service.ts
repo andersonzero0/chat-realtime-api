@@ -1,4 +1,5 @@
 import {
+  BadRequestException,
   ForbiddenException,
   Injectable,
   Logger,
@@ -7,6 +8,7 @@ import {
 import { instanceToPlain, plainToInstance } from 'class-transformer';
 import {
   ChatListItem,
+  CreateMessageDto,
   FindMessagesPrivateDto,
   FindUsersWithLastMessageDto,
   LastMessage,
@@ -15,15 +17,81 @@ import {
 import { ProducerService } from '../../services/kafka/producer.service';
 import { PrismaService } from '../../services/prisma/prisma.service';
 import { MessageConsumerType } from './types/message.type';
+import { ChatService } from '../chat/chat.service';
+import { S3Service } from '../../services/s3/s3.service';
+import { Request } from '../../infra/infra.interfaces';
+import { v7 as uuidv7 } from 'uuid';
+import * as moment from 'moment';
+import { CacheManagerService } from '../../services/cache-manager/cache-manager.service';
 
 @Injectable()
 export class MessagesService {
   constructor(
     private prisma: PrismaService,
     private producer: ProducerService,
+    private chatService: ChatService,
+    private s3Service: S3Service,
+    private cacheManager: CacheManagerService,
   ) {}
 
   private logger = new Logger('MessagesService');
+
+  async processMessage(
+    data: CreateMessageDto,
+    file: Express.Multer.File,
+    req: Request,
+  ) {
+    if (!file && data.message.type === 'photo') {
+      throw new ForbiddenException('File is required');
+    }
+
+    if (req.user_id === data.receiver_id) {
+      throw new ForbiddenException('You cannot send a message to yourself');
+    }
+
+    if (data.message.type === 'photo') {
+      const url = await this.s3Service.uploadFile(file);
+
+      if (!url) {
+        throw new BadRequestException('Failed to upload file');
+      }
+
+      data.message.content = url;
+    }
+
+    const now = moment();
+    const nowISO = now.format('YYYY-MM-DDTHH:mm:ss.SSS[Z]');
+    const id = uuidv7();
+
+    const newMessage: MessageDto = {
+      ...data,
+      id: id.toString(),
+      sender_id: req.user_id,
+      created_at: nowISO,
+      updated_at: nowISO,
+    };
+
+    // const usersIdOrder = [newMessage.sender_id, newMessage.receiver_id].sort();
+
+    // const key = `${req.project_id}-${usersIdOrder.join('-')}`;
+
+    // await this.cacheManager.set(key, newMessage);
+
+    await this.callJobRegisterMessages({
+      message: newMessage,
+      project_id: req.project_id,
+    });
+
+    await this.chatService.sendMessage({
+      message: newMessage,
+      project_id: req.project_id,
+    });
+
+    return {
+      ...newMessage,
+      read: false,
+    };
+  }
 
   async callJobRegisterMessages(messageConsumer: MessageConsumerType) {
     try {
@@ -47,7 +115,7 @@ export class MessagesService {
       });
 
       if (!project) {
-        throw new NotFoundException("Project doesn't exist");
+        return new NotFoundException("Project doesn't exist");
       }
 
       if (message.sender_id == message.receiver_id) {
@@ -198,7 +266,7 @@ export class MessagesService {
               skip: (page - 1) * pageSize,
               take: pageSize,
               orderBy: {
-                created_at: 'desc',
+                id: 'desc',
               },
             },
           },

@@ -14,6 +14,7 @@ import { S3Module } from '../../services/s3/s3.module';
 import { RedisModule } from '../../services/redis/redis.module';
 import { KafkaModule } from '../../services/kafka/kafka.module';
 import { ProjectsService } from '../projects/projects.service';
+import { CacheManagerModule } from '../../services/cache-manager/cache-manager.module';
 
 @Module({
   imports: [
@@ -44,6 +45,7 @@ import { ProjectsService } from '../projects/projects.service';
       dest: './uploads',
       storage: multer.memoryStorage(),
     }),
+    CacheManagerModule,
   ],
   providers: [MessagesService, ProjectsService, MessagesConsumer],
   controllers: [MessagesController],
