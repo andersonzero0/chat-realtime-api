@@ -13,6 +13,7 @@ lerna-debug.log*
 
 data
 
+.env
 .env.production
 .env.development
 # OS
