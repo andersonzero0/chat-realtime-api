@@ -22,6 +22,20 @@ services:
     networks:
       - backend
 
+  mailpit:
+    container_name: ${CONTAINER_NAME}-mailpit
+    restart: unless-stopped
+    image: axllent/mailpit:latest
+    environment:
+      TZ: ${CONTAINER_TIMEZONE:-America/Sao_Paulo}
+    volumes:
+      - mailpit_storage:/data
+    ports:
+      - '${SMTP_PORT:-1025}:1025'
+      - '${MAILPIT_DASHBOARD_PORT:-8040}:8025'
+    networks:
+      - backend
+
   mongo-express:
     image: mongo-express
     restart: always
@@ -119,4 +133,6 @@ networks:
 
 volumes:
   minio_storage:
+    driver: local
+  mailpit_storage:
     driver: local

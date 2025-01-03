@@ -20,6 +20,17 @@ export interface MongodbConfig {
   database_url: string;
 }
 
+export interface MailConfig {
+  smtp_host: string;
+  smtp_port: number;
+  smtp_username: string | null;
+  smtp_password: string | null;
+  mail_send_test: boolean;
+  mail_send_test_to: string;
+  mail_sender: string;
+  mailpit_dashboard_port: number;
+}
+
 export interface RedisConfig {
   version: string;
   host: string;
@@ -50,10 +61,6 @@ export interface AwsConfig {
   };
 }
 
-interface EmailConfig {
-  resendApiKey: string;
-}
-
 export interface AuthConfig {
   jwtSecretUser: string;
 }
@@ -65,7 +72,7 @@ export interface Configuration {
   redis: RedisConfig;
   kafka: KafkaConfig;
   aws: AwsConfig;
-  email: EmailConfig;
+  mail: MailConfig;
   auth: AuthConfig;
 }
 
@@ -90,6 +97,19 @@ export default (): Configuration => ({
     database_url:
       process.env.DATABASE_URL ||
       'mongodb://localhost:27017/chat-api_db_development',
+  },
+  mail: {
+    smtp_host: process.env.SMTP_HOST || 'mailpit',
+    smtp_port: parseInt(process.env.SMTP_PORT || '1025', 10),
+    smtp_username: process.env.SMTP_USERNAME || null,
+    smtp_password: process.env.SMTP_PASSWORD || null,
+    mail_send_test: process.env.MAIL_SEND_TEST === 'false',
+    mail_send_test_to: process.env.MAIL_SEND_TEST_TO || 'seu-email@com',
+    mail_sender: process.env.MAIL_SENDER || 'naoresponda@$chatapi.com',
+    mailpit_dashboard_port: parseInt(
+      process.env.MAILPIT_DASHBOARD_PORT || '8040',
+      10,
+    ),
   },
   redis: {
     version: process.env.REDIS_VERSION || 'latest',
@@ -119,9 +139,6 @@ export default (): Configuration => ({
       endpoint: process.env.AWS_S3_ENDPOINT || 'http://minio:9000',
       cdn_url: process.env.AWS_S3_CDN_URL || 'http://localhost:9000',
     },
-  },
-  email: {
-    resendApiKey: process.env.EMAIL_RESEND_API_KEY || 'api_key',
   },
   auth: {
     jwtSecretUser: process.env.JWT_SECRET_USER || 'a',

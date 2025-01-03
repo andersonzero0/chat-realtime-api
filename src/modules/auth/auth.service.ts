@@ -56,12 +56,12 @@ export class AuthService {
 
       console.log('token', token);
 
-      return await this.mailService.sendTokenByMail({
-        id: project.id,
-        email: project.email,
-        name: project.name,
-        token,
-      });
+      // return await this.mailService.sendTokenByMail({
+      //   id: project.id,
+      //   email: project.email,
+      //   name: project.name,
+      //   token,
+      // });
     } catch (error) {
       throw error;
     }

@@ -1,6 +1,12 @@
 import { Logger } from '@nestjs/common';
 import { plainToInstance } from 'class-transformer';
-import { IsNotEmpty, IsNumber, IsString, validateSync } from 'class-validator';
+import {
+  IsBoolean,
+  IsNotEmpty,
+  IsNumber,
+  IsString,
+  validateSync,
+} from 'class-validator';
 
 class EnvironmentVariables {
   @IsNumber()
@@ -54,6 +60,38 @@ class EnvironmentVariables {
   @IsString()
   @IsNotEmpty()
   DATABASE_URL!: string;
+
+  @IsString()
+  @IsNotEmpty()
+  SMTP_HOST!: string;
+
+  @IsNumber()
+  @IsNotEmpty()
+  SMTP_PORT!: number;
+
+  @IsString()
+  @IsNotEmpty()
+  SMTP_USERNAME!: string;
+
+  @IsString()
+  @IsNotEmpty()
+  SMTP_PASSWORD!: string;
+
+  @IsBoolean()
+  @IsNotEmpty()
+  MAIL_SEND_TEST!: boolean;
+
+  @IsString()
+  @IsNotEmpty()
+  MAIL_SEND_TEST_TO!: string;
+
+  @IsString()
+  @IsNotEmpty()
+  MAIL_SENDER!: string;
+
+  @IsNumber()
+  @IsNotEmpty()
+  MAILPIT_DASHBOARD_PORT!: number;
 
   @IsString()
   @IsNotEmpty()
@@ -114,10 +152,6 @@ class EnvironmentVariables {
   @IsNumber()
   @IsNotEmpty()
   KAFKA_UI_PORT!: number;
-
-  @IsString()
-  @IsNotEmpty()
-  EMAIL_RESEND_API_KEY!: string;
 
   @IsString()
   @IsNotEmpty()
