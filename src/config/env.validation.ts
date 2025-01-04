@@ -1,12 +1,6 @@
 import { Logger } from '@nestjs/common';
 import { plainToInstance } from 'class-transformer';
-import {
-  IsBoolean,
-  IsNotEmpty,
-  IsNumber,
-  IsString,
-  validateSync,
-} from 'class-validator';
+import { IsNotEmpty, IsNumber, IsString, validateSync } from 'class-validator';
 
 class EnvironmentVariables {
   @IsNumber()
@@ -77,9 +71,9 @@ class EnvironmentVariables {
   @IsNotEmpty()
   SMTP_PASSWORD!: string;
 
-  @IsBoolean()
+  @IsNumber()
   @IsNotEmpty()
-  MAIL_SEND_TEST!: boolean;
+  MAIL_SEND_TEST!: number;
 
   @IsString()
   @IsNotEmpty()

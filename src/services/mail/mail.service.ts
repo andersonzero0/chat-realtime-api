@@ -16,12 +16,8 @@ export class MailService {
     await this.mailerService.sendMail({
       from: mailConfig.mail_sender,
       to: mailConfig.mail_send_test ? mailConfig.mail_send_test_to : email,
-      subject: 'Token',
-      template: 'token',
-      context: {
-        name,
-        token,
-      },
+      subject: 'Chat API - Project Token',
+      html: `<p>Hi ${name},</p><p>Your token is: ${token}</p>`,
     });
   }
 }

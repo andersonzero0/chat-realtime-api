@@ -14,6 +14,7 @@ import { MailConfig } from '../../config/configuration';
         return {
           transport: {
             host: mailConfig.smtp_host,
+            port: mailConfig.smtp_port,
             auth: {
               user: mailConfig.smtp_username || '',
               pass: mailConfig.smtp_password || '',

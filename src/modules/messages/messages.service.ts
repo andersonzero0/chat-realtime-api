@@ -22,7 +22,7 @@ import { S3Service } from '../../services/s3/s3.service';
 import { Request } from '../../infra/infra.interfaces';
 import { v7 as uuidv7 } from 'uuid';
 import * as moment from 'moment';
-import { CacheManagerService } from '../../services/cache-manager/cache-manager.service';
+import { MessagesCache } from './messages.cache';
 
 @Injectable()
 export class MessagesService {
@@ -31,7 +31,7 @@ export class MessagesService {
     private producer: ProducerService,
     private chatService: ChatService,
     private s3Service: S3Service,
-    private cacheManager: CacheManagerService,
+    private messagesCache: MessagesCache,
   ) {}
 
   private logger = new Logger('MessagesService');
@@ -71,11 +71,18 @@ export class MessagesService {
       updated_at: nowISO,
     };
 
-    // const usersIdOrder = [newMessage.sender_id, newMessage.receiver_id].sort();
+    await this.messagesCache.saveMessage({
+      project_id: req.project_id,
+      message: newMessage,
+    });
 
-    // const key = `${req.project_id}-${usersIdOrder.join('-')}`;
+    const messagesCache = await this.messagesCache.getMessages(
+      req.project_id,
+      req.user_id,
+      data.receiver_id,
+    );
 
-    // await this.cacheManager.set(key, newMessage);
+    console.log('messagesCache', messagesCache);
 
     await this.callJobRegisterMessages({
       message: newMessage,
@@ -121,6 +128,11 @@ export class MessagesService {
       if (message.sender_id == message.receiver_id) {
         return;
       }
+
+      await this.messagesCache.deleteMessage({
+        project_id,
+        message,
+      });
 
       const sortedString = [message.sender_id, message.receiver_id].sort();
       const concatString = sortedString.join('-');
@@ -277,6 +289,33 @@ export class MessagesService {
         }
 
         const messages = chatListItem.messages;
+
+        const messagesCache = await this.messagesCache.getMessages(
+          project_id,
+          data.viewer_id,
+          data.target_user_id,
+        );
+
+        console.log('messagesCache', messagesCache);
+
+        // if (messagesCache.length > 0) {
+        //   messagesCache.forEach((message) => {
+        //     messages.push({
+        //       id: message.id,
+        //       sender_id: message.sender_id,
+        //       receiver_id: message.receiver_id,
+        //       message: instanceToPlain(message.message),
+        //       read: message.read || false,
+        //       ref_message: instanceToPlain(message.ref_message) || null,
+        //       created_at: new Date(message.created_at as string | Date),
+        //       updated_at: new Date(message.updated_at as string | Date),
+        //     });
+        //   });
+        // }
+
+        // messages.sort((a, b) => {
+        //   return a.id.localeCompare(b.id);
+        // });
 
         if (messages.length == 0) {
           return messages;

@@ -103,7 +103,7 @@ export default (): Configuration => ({
     smtp_port: parseInt(process.env.SMTP_PORT || '1025', 10),
     smtp_username: process.env.SMTP_USERNAME || null,
     smtp_password: process.env.SMTP_PASSWORD || null,
-    mail_send_test: process.env.MAIL_SEND_TEST === 'false',
+    mail_send_test: parseInt(process.env.MAIL_SEND_TEST || '0', 10) === 1,
     mail_send_test_to: process.env.MAIL_SEND_TEST_TO || 'seu-email@com',
     mail_sender: process.env.MAIL_SENDER || 'naoresponda@$chatapi.com',
     mailpit_dashboard_port: parseInt(

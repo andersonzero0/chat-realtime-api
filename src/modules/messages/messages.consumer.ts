@@ -2,6 +2,7 @@ import { Injectable, OnModuleInit } from '@nestjs/common';
 import { ConsumerService } from '../../services/kafka/consumer.service';
 import { MessageConsumerType } from './types/message.type';
 import { MessagesService } from './messages.service';
+import { PartitionAssigners } from 'kafkajs';
 
 @Injectable()
 export class MessagesConsumer implements OnModuleInit {
@@ -22,7 +23,9 @@ export class MessagesConsumer implements OnModuleInit {
           initialRetryTime: 500,
           maxRetryTime: 2000,
         },
-        sessionTimeout: 10000,
+        maxInFlightRequests: 100,
+        partitionAssigners: [PartitionAssigners.roundRobin],
+        //sessionTimeout: 10000,
       },
       onMessage: async (messageConsumer) => {
         if (messageConsumer && messageConsumer.value) {
@@ -31,6 +34,8 @@ export class MessagesConsumer implements OnModuleInit {
           ) as MessageConsumerType;
 
           const { message, project_id } = data;
+
+          await new Promise((resolve) => setTimeout(resolve, 10000));
 
           await this.messagesService.createMessage(message, project_id);
         }

@@ -54,14 +54,11 @@ export class AuthService {
 
       const token = this.encryptPayload(payload);
 
-      console.log('token', token);
-
-      // return await this.mailService.sendTokenByMail({
-      //   id: project.id,
-      //   email: project.email,
-      //   name: project.name,
-      //   token,
-      // });
+      return await this.mailService.sendMail(
+        project.email,
+        project.name,
+        token,
+      );
     } catch (error) {
       throw error;
     }

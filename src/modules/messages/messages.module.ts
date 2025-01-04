@@ -15,6 +15,7 @@ import { RedisModule } from '../../services/redis/redis.module';
 import { KafkaModule } from '../../services/kafka/kafka.module';
 import { ProjectsService } from '../projects/projects.service';
 import { CacheManagerModule } from '../../services/cache-manager/cache-manager.module';
+import { MessagesCache } from './messages.cache';
 
 @Module({
   imports: [
@@ -47,7 +48,12 @@ import { CacheManagerModule } from '../../services/cache-manager/cache-manager.m
     }),
     CacheManagerModule,
   ],
-  providers: [MessagesService, ProjectsService, MessagesConsumer],
+  providers: [
+    MessagesService,
+    ProjectsService,
+    MessagesConsumer,
+    MessagesCache,
+  ],
   controllers: [MessagesController],
 })
 export class MessagesModule {}
