@@ -18,8 +18,6 @@ export class MessagesCache {
   ) {
     const key = await this.createKey(project_id, sender_id, receiver_id);
 
-    console.log('KEY', key);
-
     const messages = await this.cacheManager.get<MessageDto[]>(key);
 
     return messages || [];
@@ -44,7 +42,6 @@ export class MessagesCache {
   }
 
   async deleteMessage({ project_id, message }: TSaveMessageCache) {
-    console.log('DELETED !!!!!!');
     const key = await this.createKey(
       project_id,
       message.sender_id,

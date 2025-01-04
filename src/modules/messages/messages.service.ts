@@ -76,14 +76,6 @@ export class MessagesService {
       message: newMessage,
     });
 
-    const messagesCache = await this.messagesCache.getMessages(
-      req.project_id,
-      req.user_id,
-      data.receiver_id,
-    );
-
-    console.log('messagesCache', messagesCache);
-
     await this.callJobRegisterMessages({
       message: newMessage,
       project_id: req.project_id,
@@ -296,26 +288,24 @@ export class MessagesService {
           data.target_user_id,
         );
 
-        console.log('messagesCache', messagesCache);
+        if (messagesCache.length > 0) {
+          messagesCache.forEach((message) => {
+            messages.push({
+              id: message.id,
+              sender_id: message.sender_id,
+              receiver_id: message.receiver_id,
+              message: instanceToPlain(message.message),
+              read: message.read || false,
+              ref_message: instanceToPlain(message.ref_message) || null,
+              created_at: new Date(message.created_at as string | Date),
+              updated_at: new Date(message.updated_at as string | Date),
+            });
+          });
+        }
 
-        // if (messagesCache.length > 0) {
-        //   messagesCache.forEach((message) => {
-        //     messages.push({
-        //       id: message.id,
-        //       sender_id: message.sender_id,
-        //       receiver_id: message.receiver_id,
-        //       message: instanceToPlain(message.message),
-        //       read: message.read || false,
-        //       ref_message: instanceToPlain(message.ref_message) || null,
-        //       created_at: new Date(message.created_at as string | Date),
-        //       updated_at: new Date(message.updated_at as string | Date),
-        //     });
-        //   });
-        // }
-
-        // messages.sort((a, b) => {
-        //   return a.id.localeCompare(b.id);
-        // });
+        messages.sort((a, b) => {
+          return a.id.localeCompare(b.id) * -1;
+        });
 
         if (messages.length == 0) {
           return messages;
@@ -485,37 +475,63 @@ export class MessagesService {
 
       chat_list.chat_list = newChatList;
 
-      const formattedChatList = {
-        chat_list: chat_list.chat_list
-          .map((item) => {
-            const messages = item.chat_list_item.messages;
-            const last_message =
-              messages.length > 0 ? messages[messages.length - 1] : null;
+      const chatListFormatted = await Promise.all(
+        chat_list.chat_list.map(async (item) => {
+          const messages = item.chat_list_item.messages;
 
-            // unread_messages_count de messages
-            const unread_messages_count = messages.filter(
-              (message) => message.receiver_id == data.user_id && !message.read,
-            ).length;
+          const messagesCache = await this.messagesCache.getMessages(
+            project_id,
+            item.chat_list_item.user_one_id,
+            item.chat_list_item.user_two_id,
+          );
 
-            return {
-              id:
-                chat_list.user_id == item.chat_list_item.user_one_id
-                  ? item.chat_list_item.user_two_id
-                  : item.chat_list_item.user_one_id,
+          if (messagesCache.length > 0) {
+            messagesCache.forEach((message) => {
+              messages.push({
+                id: message.id,
+                sender_id: message.sender_id,
+                receiver_id: message.receiver_id,
+                message: instanceToPlain(message.message),
+                read: message.read || false,
+                //ref_message: instanceToPlain(message.ref_message) || null,
+                created_at: new Date(message.created_at as string | Date),
+                //updated_at: new Date(message.updated_at as string | Date),
+              });
+            });
+          }
 
-              unread_messages_count,
-              last_message: plainToInstance(LastMessage, last_message),
-            };
-          })
-          .sort((a, b) =>
-            a.last_message && b.last_message
-              ? b.last_message.created_at.getTime() -
-                a.last_message.created_at.getTime()
-              : 0,
-          ),
-      };
+          messages.sort((a, b) => {
+            return a.id.localeCompare(b.id);
+          });
 
-      return formattedChatList.chat_list;
+          const last_message =
+            messages.length > 0 ? messages[messages.length - 1] : null;
+
+          // unread_messages_count de messages
+          const unread_messages_count = messages.filter(
+            (message) => message.receiver_id == data.user_id && !message.read,
+          ).length;
+
+          return {
+            id:
+              chat_list.user_id == item.chat_list_item.user_one_id
+                ? item.chat_list_item.user_two_id
+                : item.chat_list_item.user_one_id,
+
+            unread_messages_count,
+            last_message: plainToInstance(LastMessage, last_message),
+          };
+        }),
+      );
+
+      chatListFormatted.sort((a, b) =>
+        a.last_message && b.last_message
+          ? b.last_message.created_at.getTime() -
+            a.last_message.created_at.getTime()
+          : 0,
+      );
+
+      return chatListFormatted;
     } catch (error) {
       throw error;
     }

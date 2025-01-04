@@ -23,7 +23,7 @@ import { redisStore } from 'cache-manager-redis-yet';
 
         return {
           store: store as unknown as CacheStore,
-          ttl: 2000,
+          //ttl: 2000,
         };
       },
     }),

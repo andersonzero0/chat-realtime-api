@@ -35,8 +35,6 @@ export class MessagesConsumer implements OnModuleInit {
 
           const { message, project_id } = data;
 
-          await new Promise((resolve) => setTimeout(resolve, 10000));
-
           await this.messagesService.createMessage(message, project_id);
         }
       },
