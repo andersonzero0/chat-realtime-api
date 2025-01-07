@@ -55,5 +55,6 @@ import { MessagesCache } from './messages.cache';
     MessagesCache,
   ],
   controllers: [MessagesController],
+  exports: [MessagesService],
 })
 export class MessagesModule {}
