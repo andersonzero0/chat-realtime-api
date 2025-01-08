@@ -21,7 +21,6 @@ import { ChatService } from '../chat/chat.service';
 import { S3Service } from '../../services/s3/s3.service';
 import { Request } from '../../infra/infra.interfaces';
 import { v7 as uuidv7 } from 'uuid';
-import * as moment from 'moment';
 import { MessagesCache } from './messages.cache';
 
 @Injectable()
@@ -59,8 +58,9 @@ export class MessagesService {
       data.message.content = url;
     }
 
-    const now = moment();
-    const nowISO = now.format('YYYY-MM-DDTHH:mm:ss.SSS[Z]');
+    const now = new Date();
+    //const nowISO = now.format('YYYY-MM-DDTHH:mm:ss.SSS[Z]');
+    const nowISO = now.toISOString();
     const id = uuidv7();
 
     const newMessage: MessageDto = {
