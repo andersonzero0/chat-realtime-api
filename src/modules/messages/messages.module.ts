@@ -16,6 +16,8 @@ import { KafkaModule } from '../../services/kafka/kafka.module';
 import { ProjectsService } from '../projects/projects.service';
 import { CacheManagerModule } from '../../services/cache-manager/cache-manager.module';
 import { MessagesCache } from './messages.cache';
+import { MessagesResolver } from './graphql/resolver/messages.resolver';
+import { PubSub } from 'graphql-subscriptions';
 
 @Module({
   imports: [
@@ -53,6 +55,11 @@ import { MessagesCache } from './messages.cache';
     ProjectsService,
     MessagesConsumer,
     MessagesCache,
+    MessagesResolver,
+    {
+      provide: 'PUB_SUB',
+      useValue: new PubSub(),
+    },
   ],
   controllers: [MessagesController],
   exports: [MessagesService],

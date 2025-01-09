@@ -19,6 +19,10 @@ import {
 import { MetricsMiddleware } from './middlewares/metrics.middleware';
 import { CacheManagerModule } from './services/cache-manager/cache-manager.module';
 import configuration from './config/configuration';
+import { GraphQLModule } from '@nestjs/graphql';
+import { ApolloDriver } from '@nestjs/apollo';
+import { ApolloServerPluginLandingPageLocalDefault } from '@apollo/server/plugin/landingPage/default';
+import { AuthService } from './modules/auth/auth.service';
 
 @Module({
   imports: [
@@ -39,6 +43,47 @@ import configuration from './config/configuration';
     RedisModule,
     HealthModule,
     KafkaModule,
+    GraphQLModule.forRootAsync({
+      driver: ApolloDriver,
+      imports: [AuthModule],
+      inject: [AuthService],
+      useFactory: (authService: AuthService) => ({
+        playground: false,
+        autoSchemaFile: true,
+        plugins: [ApolloServerPluginLandingPageLocalDefault()],
+        subscriptions: {
+          'graphql-ws': {
+            onConnect: async (ctx) => {
+              const { connectionParams } = ctx;
+
+              const auth = connectionParams.Authorization;
+
+              if (!auth) {
+                return false;
+              }
+
+              const [type, token] = auth.split(' ');
+
+              if (type !== 'Bearer' || !token) {
+                return false;
+              }
+
+              const payload = await authService.verifyUser(token);
+
+              if (!payload) {
+                return false;
+              }
+
+              const project_id = payload.id.split('_')[0];
+              const user_id = payload.id.split('_')[1];
+
+              ctx.connectionParams.project_id = project_id;
+              ctx.connectionParams.user_id = user_id;
+            },
+          },
+        },
+      }),
+    }),
     PrometheusModule.register({
       path: '/metrics',
     }),
@@ -61,3 +106,18 @@ export class AppModule {
     consumer.apply(MetricsMiddleware).forRoutes('*');
   }
 }
+
+/**
+ * driver: ApolloDriver,
+        playground: false,
+        autoSchemaFile: true,
+        plugins: [ApolloServerPluginLandingPageLocalDefault()],
+        subscriptions: {
+          'graphql-ws': {
+            onConnect: async (ctx: any) => {
+              console.log('onConnect', ctx);
+              return ctx;
+            },
+          },
+        },
+ */

@@ -1,6 +1,7 @@
 import {
   BadRequestException,
   ForbiddenException,
+  Inject,
   Injectable,
   Logger,
   NotFoundException,
@@ -22,6 +23,7 @@ import { S3Service } from '../../services/s3/s3.service';
 import { Request } from '../../infra/infra.interfaces';
 import { v7 as uuidv7 } from 'uuid';
 import { MessagesCache } from './messages.cache';
+import { PubSub } from 'graphql-subscriptions';
 
 @Injectable()
 export class MessagesService {
@@ -31,13 +33,14 @@ export class MessagesService {
     private chatService: ChatService,
     private s3Service: S3Service,
     private messagesCache: MessagesCache,
+    @Inject('PUB_SUB') private pubSub: PubSub,
   ) {}
 
   private logger = new Logger('MessagesService');
 
   async processMessage(
     data: CreateMessageDto,
-    file: Express.Multer.File,
+    file: Express.Multer.File | null,
     req: Request,
   ) {
     if (!file && data.message.type === 'photo') {
@@ -48,7 +51,7 @@ export class MessagesService {
       throw new ForbiddenException('You cannot send a message to yourself');
     }
 
-    if (data.message.type === 'photo') {
+    if (data.message.type === 'photo' && file) {
       const url = await this.s3Service.uploadFile(file);
 
       if (!url) {
@@ -84,6 +87,14 @@ export class MessagesService {
     await this.chatService.sendMessage({
       message: newMessage,
       project_id: req.project_id,
+    });
+
+    this.pubSub.publish('messageCreated', {
+      messageCreated: {
+        ...newMessage,
+        read: false,
+        project_id: req.project_id,
+      },
     });
 
     return {
