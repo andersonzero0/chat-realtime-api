@@ -14,6 +14,7 @@ import { MessagesObject } from '../objects/messages.object';
 import { CreateMessageArgs } from '../args/create-message.args';
 import { PubSub } from 'graphql-subscriptions';
 import { AuthService } from '../../../auth/auth.service';
+import { FindMessagesArgs } from '../args/find-messages.args';
 
 @Resolver()
 export class MessagesResolver {
@@ -22,11 +23,6 @@ export class MessagesResolver {
     @Inject('PUB_SUB') private pubSub: PubSub,
     private authService: AuthService,
   ) {}
-
-  @Query(() => String)
-  hello() {
-    return 'Hello World!';
-  }
 
   @Mutation(() => MessagesObject)
   @UseGuards(AuthUsersGuard)
@@ -44,6 +40,28 @@ export class MessagesResolver {
         },
         null,
         req,
+      );
+    } catch (error) {
+      throw error;
+    }
+  }
+
+  @Query(() => [MessagesObject])
+  @UseGuards(AuthUsersGuard)
+  async getMessages(
+    @Args(new ValidationPipe()) args: FindMessagesArgs,
+    @Context('req') req: Request,
+  ) {
+    try {
+      return this.messagesService.findMessagesPrivate(
+        {
+          ...args.data,
+          viewer_id: req.user_id,
+          reading_mode: args.data.reading_mode
+            ? args.data.reading_mode.toString()
+            : undefined,
+        },
+        req.project_id,
       );
     } catch (error) {
       throw error;

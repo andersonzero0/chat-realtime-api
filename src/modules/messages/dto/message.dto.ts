@@ -3,6 +3,7 @@ import { Transform, Type } from 'class-transformer';
 import {
   IsBooleanString,
   IsEnum,
+  IsInt,
   IsNotEmpty,
   IsNumber,
   IsOptional,
@@ -118,7 +119,7 @@ export class FindMessagesPrivateDto {
 
   @ApiProperty({ required: false })
   @IsOptional()
-  @IsNumber({}, { message: 'Page must be a number' })
+  @IsInt({})
   page?: number;
 
   @IsString()
